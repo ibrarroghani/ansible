@@ -1,0 +1,28 @@
+
+Lecture 36:
+
+Ansible , you can run only specific task in playbook, 
+
+Ansible playbook --> tags --> lable --> call ansible playbook --> tags are labels that you can assign to taks in playbook and then you can while running your playbook in terminal using specific tasg:
+
+Example :
+
+task:
+- name: Installation nginx 
+  yum: 
+     name: nginx
+     state: present
+  tags: 
+  - nginx
+
+- name: Service start
+  service:
+    name: nginx
+    state: started
+  tags:
+  - service_nginx
+
+
+#ansible-playbook file.yml --> it will run everything 
+
+#ansible-playbook file.yml  --tags service_nginx,nginx

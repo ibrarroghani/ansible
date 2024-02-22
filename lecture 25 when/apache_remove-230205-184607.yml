@@ -1,0 +1,16 @@
+---
+- name: Removing the apache server 
+  hosts: all
+  become: yes
+  tasks:
+  - name: Checking the apache and removing on ubuntu machine
+    apt:
+      name: apache2
+      state: absent
+    when: ansible_os_family == "Debian"
+
+  - name: Remvoing apache on REDHAT machine 
+    yum:
+      name: httpd
+      state: absent
+    when: ansible_os_family == "RedHat"

@@ -1,0 +1,11 @@
+Operators -->
+1. Arithmetic operators 
+2. Comparisions 
+3. Logical 
+
+
+4. bitwise operators  &  | ^
+5. identify   a is b , a is not b
+6. membership , a not in b , a in b 
+
+

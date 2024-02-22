@@ -1,0 +1,1640 @@
+lecture 1
+https://docs.ansible.com/
+
+
+Installation :-
+
+1. Yum or rpm install or apt-get install
+2. pip install
+3. compile source code isntallation
+
+installation guide : https://docs.ansible.com/ansible/2.9/installation_guide/index.html
+Installing Ansible on Ubuntu
+
+
+$ sudo apt update
+$ sudo apt install software-properties-common
+$ sudo apt-add-repository  ppa:ansible/ansible
+$ sudo apt install ansible
+
+root@node1:~# ansible --version
+ansible 2.9.27
+config file = /etc/ansible/ansible.cfg
+configured module search path = [u'/root/.ansible/plugins/modules', u'/usr/share/ansible/plugins/modules']
+ansible python module location = /usr/lib/python2.7/dist-packages/ansible
+executable location = /usr/bin/ansible
+python version = 2.7.17 (default, Nov 28 2022, 18:51:39) [GCC 7.5.0]
+
+
+
+root@node1:/etc/ansible# pwd
+/etc/ansible
+root@node1:/etc/ansible# tree
+.
+├── ansible.cfg
+├── hosts
+└── roles
+
+1 directory, 2 files
+root@node1:/etc/ansible#
+
+
+
+
+
+
+RHEL :-
+subscription :-
+
+
+https://sso.redhat.com/auth/realms/redhat-external/protocol/openid-connect/registrations?client_id=rhd-web&redirect_uri=https%3A%2F%2Fdevelopers.redhat.com&state=a4ecd0f1-1e1b-4f77-8ab8-75bca9a84f15&response_mode=fragment&response_type=code&scope=openid&nonce=bab04a92-fff9-43b6-8d24-d4a653163741
+
+[root@rhel1 aadmin]# hostname
+rhel1
+
+[root@rhel1 aadmin]# subscription-manager register
+Registering to: subscription.rhsm.redhat.com:443/subscription
+Username: abdealidodia515253
+Password:
+The system has been registered with ID: 198362d1-4de8-422f-9212-48e7a7942e6f
+The registered system name is: rhel1
+
+[root@rhel1 aadmin]# subscription-manager list --available --all
+\ Fetching organizations
+
+
+
+# subscription-manager attach --pool=<poolid>
+
+
+RHEL :-
+
+#yum update
+[root@rhel1 aadmin]# yum install ansible
+Updating Subscription Management repositories.
+Last metadata expiration check: 0:02:13 ago on Sun 08 Jan 2023 06:11:17 AM EST.
+No match for argument: ansible
+Error: Unable to find a match: ansible
+
+
+EPEL : -
+https://docs.fedoraproject.org/en-US/epel/
+
+
+[root@rhel1 aadmin]# cat /etc/redhat-release
+Red Hat Enterprise Linux release 9.1 (Plow)
+
+
+
+# subscription-manager repos --enable codeready-builder-for-rhel-9-$(arch)-rpms
+Repository 'codeready-builder-for-rhel-9-x86_64-rpms' is enabled for this system.
+
+
+# dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
+
+
+[root@rhel1 aadmin]# ansible --version
+ansible [core 2.13.3]
+config file = /etc/ansible/ansible.cfg
+configured module search path = ['/root/.ansible/plugins/modules', '/usr/share/ansible/plugins/modules']
+ansible python module location = /usr/lib/python3.9/site-packages/ansible
+ansible collection location = /root/.ansible/collections:/usr/share/ansible/collections
+executable location = /usr/bin/ansible
+python version = 3.9.14 (main, Nov  7 2022, 00:00:00) [GCC 11.3.1 20220421 (Red Hat 11.3.1-2)]
+jinja version = 3.1.2
+libyaml = True
+
+
+
+
+TASK :-
+CentOS  --> Ansible
+
+pip install ansible
+compile
+
+
+
+lecture 2#
+Alway prcatice to create one user for ansible in production :-
+
+
+#useradd aadmin
+#passwd aadmin
+123@abd
+
+
+Ansible master : 192.168.1.12 (Ubuntu (python 2.7.17))
+Ansible node1 : 192.168.1.14 (Ubuntu (Python 2.7.18))
+
+__________________________________________________________________________________________________
+
+
+Master :
+#useradd aadmin
+#passwd aadmin
+123@abd
+
+We need to add sudo entry for normal user:-
+#visudo
+aadmin  ALL=(ALL) NOPASSWD:ALL
+
+
+#vim /etc/ssh/sshd_config
+
+PasswordAuthentication yes
+
+#service sshd restart
+
+
+aadmin@ansible_master:~$ whoami
+aadmin
+aadmin@ansible_master:~$ ssh-keygen
+Generating public/private rsa key pair.
+Enter file in which to save the key (/home/aadmin/.ssh/id_rsa):
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+Your identification has been saved in /home/aadmin/.ssh/id_rsa.
+Your public key has been saved in /home/aadmin/.ssh/id_rsa.pub.
+The key fingerprint is:
+SHA256:whepqJQkCf2RaA8YdLyDQ995CvKX8Des5BYI5oc9Xw0 aadmin@ansible_master
+The key's randomart image is:
+
+
+aadmin@ansible_master:~$ ssh-copy-id aadmin@192.168.1.14
+/usr/bin/ssh-copy-id: INFO: Source of key(s) to be installed: "/home/aadmin/.ssh/id_rsa.pub"
+The authenticity of host '192.168.1.14 (192.168.1.14)' can't be established.
+ECDSA key fingerprint is SHA256:JIdxToa7tQ3I+iUq3Hnvjk7G4YdGxeC4UeLYlB0vnTY.
+Are you sure you want to continue connecting (yes/no)? yes
+/usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed
+/usr/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you are prompted now it is to install the new keys
+aadmin@192.168.1.14's password:
+
+Number of key(s) added: 1
+
+Now try logging into the machine, with:   "ssh 'aadmin@192.168.1.14'"
+and check to make sure that only the key(s) you wanted were added.
+
+
+
+#now you need to check and login ssh via remote from master to node
+
+#ssh aadmin@192.168.1.14
+
+Without asking any password will login success
+$ touch /home/aadmin/master.txt
+You can check remote or node machine for verify file creation
+
+aadmin@ansible_master:/etc/ansible$ sudo cat  hosts
+# This is the default ansible 'hosts' file.
+
+192.168.1.14
+
+
+Verify:-
+
+
+aadmin@ansible_master:/etc/ansible$ ansible all -m ping
+[DEPRECATION WARNING]: Distribution Ubuntu 20.04 on host 192.168.1.14 should use /usr/bin/python3, but is using /usr/bin/python for backward compatibility with prior Ansible releases. A future Ansible release will default to
+using the discovered platform python for this host. See https://docs.ansible.com/ansible/2.9/reference_appendices/interpreter_discovery.html for more information. This feature will be removed in version 2.12. Deprecation
+warnings can be disabled by setting deprecation_warnings=False in ansible.cfg.
+192.168.1.14 | SUCCESS => {
+"ansible_facts": {
+"discovered_interpreter_python": "/usr/bin/python"
+},
+"changed": false,
+"ping": "pong"
+}
+
+
+
+lect 3#
+
+#cd /etc/ansible
+vim ansible.cfg
+
+# uncomment this to disable SSH key host checking
+host_key_checking = False
+
+
+
+:wq!
+
+
+#ansible all -m ping
+
+
+@ssh-copy-id 192.168.1.14
+
+OR
+#ssh-keygen
+overwrite : yes
+
+#ssh-copy-id 192.168.1.14
+
+
+#ssh aadmin@192.168.1.14
+without asking password
+
+
+
+
+
+
+Structure :-
+
+
+
+aadmin@ansible_master:/etc/ansible$ tree
+.
+|-- ansible.cfg
+|-- hosts
+`-- roles
+
+1 directory, 2 files
+aadmin@ansible_master:/etc/ansible$ ansible --version
+ansible 2.9.27
+config file = /etc/ansible/ansible.cfg
+configured module search path = [u'/home/aadmin/.ansible/plugins/modules', u'/usr/share/ansible/plugins/modules']
+ansible python module location = /usr/lib/python2.7/dist-packages/ansible
+executable location = /usr/bin/ansible
+python version = 2.7.17 (default, Nov 28 2022, 18:51:39) [GCC 7.5.0]
+aadmin@ansible_master:/etc/ansible$ pwd
+/etc/ansible
+
+
+
+
+
+Change to /home/aadmin/ansible
+
+
+aadmin@ansible_master:~/ansible$ ansible --version
+ansible 2.9.27
+config file = /home/aadmin/ansible/ansible.cfg
+configured module search path = [u'/home/aadmin/.ansible/plugins/modules', u'/usr/share/ansible/plugins/modules']
+ansible python module location = /usr/lib/python2.7/dist-packages/ansible
+executable location = /usr/bin/ansible
+python version = 2.7.17 (default, Nov 28 2022, 18:51:39) [GCC 7.5.0]
+aadmin@ansible_master:~/ansible$ pwd
+/home/aadmin/ansible
+aadmin@ansible_master:~/ansible$ tree
+.
+|-- ansible.cfg
+|-- hosts
+`-- roles
+
+1 directory, 2 files
+
+
+
+
+aadmin@ansible_master:~/ansible$ pwd
+/home/aadmin/ansible
+aadmin@ansible_master:~/ansible$ cd
+aadmin@ansible_master:~$ pwd
+/home/aadmin
+aadmin@ansible_master:~$ ls -ltrh
+total 4.0K
+drwxrwxr-x 3 aadmin aadmin 4.0K Jan 14 07:58 ansible
+aadmin@ansible_master:~$ ansible --version
+ansible 2.9.27
+config file = /etc/ansible/ansible.cfg
+configured module search path = [u'/home/aadmin/.ansible/plugins/modules', u'/usr/share/ansible/plugins/modules']
+ansible python module location = /usr/lib/python2.7/dist-packages/ansible
+executable location = /usr/bin/ansible
+python version = 2.7.17 (default, Nov 28 2022, 18:51:39) [GCC 7.5.0]
+
+
+
+
+
+
+
+aadmin@ansible_master:~$ touch ansible.cfg
+aadmin@ansible_master:~$ ls -ltrh
+total 4.0K
+drwxrwxr-x 3 aadmin aadmin 4.0K Jan 14 07:58 ansible
+-rw-rw-r-- 1 aadmin aadmin    0 Jan 14 08:01 ansible.cfg
+aadmin@ansible_master:~$ ansible --version
+ansible 2.9.27
+config file = /home/aadmin/ansible.cfg
+configured module search path = [u'/home/aadmin/.ansible/plugins/modules', u'/usr/share/ansible/plugins/modules']
+ansible python module location = /usr/lib/python2.7/dist-packages/ansible
+executable location = /usr/bin/ansible
+python version = 2.7.17 (default, Nov 28 2022, 18:51:39) [GCC 7.5.0]
+
+
+
+
+
+
+
+
+aadmin@ansible_master:/home$ export ANSIBLE_CONFIG=/home/aadmin/ansible
+aadmin@ansible_master:/home$ env
+
+ANSIBLE_CONFIG=/home/aadmin/ansible
+
+
+aadmin@ansible_master:/home$ ansible --version
+ansible 2.9.27
+config file = /home/aadmin/ansible/ansible.cfg
+configured module search path = [u'/home/aadmin/.ansible/plugins/modules', u'/usr/share/ansible/plugins/modules']
+ansible python module location = /usr/lib/python2.7/dist-packages/ansible
+executable location = /usr/bin/ansible
+python version = 2.7.17 (default, Nov 28 2022, 18:51:39) [GCC 7.5.0]
+
+
+
+Location priority for ansible configuration :-
+1. ANSIBLE_CONFIG (Env variable )
+2. ansible.cfg from current directory
+3. ansible.cfg file available in home directory
+4. /etc/ansible location (DEFAULT)
+
+aadmin@ansible_master:~/ansible$ cat ansible.cfg | head -n 20
+# config file for ansible -- https://ansible.com/
+# ===============================================
+
+# nearly all parameters can be overridden in ansible-playbook
+# or with command line flags. ansible will read ANSIBLE_CONFIG,
+# ansible.cfg in the current working directory, .ansible.cfg in
+# the home directory or /etc/ansible/ansible.cfg, whichever it
+# finds first
+
+[defaults]
+
+# some basic default values...
+inventory      = /home/aadmin/ansible/hosts
+
+
+
+
+
+
+
+$ ansible all -i /home/aadmin/inv -m ping
+
+
+
+aadmin@ansible_master:~/ansible$ ansible all -m ping
+
+warnings can be disabled by setting deprecation_warnings=False in ansible.cfg.
+192.168.1.14 | SUCCESS => {
+"ansible_facts": {
+"discovered_interpreter_python": "/usr/bin/python"
+},
+"changed": false,
+"ping": "pong"
+}
+192.168.1.15 | UNREACHABLE! => {
+"changed": false,
+"msg": "Failed to connect to the host via ssh: ssh: connect to host 192.168.1.15 port 22: No route to host",
+"unreachable": true
+}
+192.168.1.17 | UNREACHABLE! => {
+"changed": false,
+"msg": "Failed to connect to the host via ssh: ssh: connect to host 192.168.1.17 port 22: No route to host",
+"unreachable": true
+}
+192.168.1.16 | UNREACHABLE! => {
+"changed": false,
+"msg": "Failed to connect to the host via ssh: ssh: connect to host 192.168.1.16 port 22: No route to host",
+"unreachable": true
+}
+aadmin@ansible_master:~/ansible$ ansible 192.168.1.14 -m ping
+
+warnings can be disabled by setting deprecation_warnings=False in ansible.cfg.
+192.168.1.14 | SUCCESS => {
+"ansible_facts": {
+"discovered_interpreter_python": "/usr/bin/python"
+},
+"changed": false,
+"ping": "pong"
+
+
+
+aadmin@ansible_master:~/ansible$ ansible 192.168.1.14:192.168.1.15 -m ping
+
+warnings can be disabled by setting deprecation_warnings=False in ansible.cfg.
+192.168.1.14 | SUCCESS => {
+"ansible_facts": {
+"discovered_interpreter_python": "/usr/bin/python"
+},
+"changed": false,
+"ping": "pong"
+}
+192.168.1.15 | UNREACHABLE! => {
+"changed": false,
+"msg": "Failed to connect to the host via ssh: ssh: connect to host 192.168.1.15 port 22: No route to host",
+"unreachable": true
+}
+
+
+
+
+
+aadmin@ansible_master:~/ansible$ ansible 192.168.1.14:192.168.1.16 -m ping
+
+warnings can be disabled by setting deprecation_warnings=False in ansible.cfg.
+192.168.1.14 | SUCCESS => {
+"ansible_facts": {
+"discovered_interpreter_python": "/usr/bin/python"
+},
+"changed": false,
+"ping": "pong"
+}
+192.168.1.16 | UNREACHABLE! => {
+"changed": false,
+"msg": "Failed to connect to the host via ssh: ssh: connect to host 192.168.1.16 port 22: No route to host",
+"unreachable": true
+}
+aadmin@ansible_master:~/ansible$ ansible 192.168.1.14:192.168.1.16:192.168.1.15 -m ping
+
+
+#vim hosts
+[docker]
+192.168.1.14
+
+[was]
+192.168.1.15
+192.168.1.16
+192.168.1.17
+
+
+
+
+#ansible all -m ping
+
+
+
+
+
+
+
+
+
+aadmin@ansible_master:~/ansible$ ansible docker -m ping
+
+warnings can be disabled by setting deprecation_warnings=False in ansible.cfg.
+192.168.1.14 | SUCCESS => {
+"ansible_facts": {
+"discovered_interpreter_python": "/usr/bin/python"
+},
+"changed": false,
+"ping": "pong"
+}
+aadmin@ansible_master:~/ansible$ ansible was -m ping
+192.168.1.16 | UNREACHABLE! => {
+"changed": false,
+"msg": "Failed to connect to the host via ssh: ssh: connect to host 192.168.1.16 port 22: No route to host",
+"unreachable": true
+}
+192.168.1.15 | UNREACHABLE! => {
+"changed": false,
+"msg": "Failed to connect to the host via ssh: ssh: connect to host 192.168.1.15 port 22: No route to host",
+"unreachable": true
+}
+192.168.1.17 | UNREACHABLE! => {
+"changed": false,
+"msg": "Failed to connect to the host via ssh: ssh: connect to host 192.168.1.17 port 22: No route to host",
+"unreachable": true
+}
+
+
+
+aadmin@ansible_master:~/ansible$ ansible docker:was -m ping
+
+warnings can be disabled by setting deprecation_warnings=False in ansible.cfg.
+192.168.1.14 | SUCCESS => {
+"ansible_facts": {
+"discovered_interpreter_python": "/usr/bin/python"
+},
+"changed": false,
+"ping": "pong"
+}
+192.168.1.15 | UNREACHABLE! => {
+"changed": false,
+"msg": "Failed to connect to the host via ssh: ssh: connect to host 192.168.1.15 port 22: No route to host",
+"unreachable": true
+}
+192.168.1.16 | UNREACHABLE! => {
+"changed": false,
+"msg": "Failed to connect to the host via ssh: ssh: connect to host 192.168.1.16 port 22: No route to host",
+"unreachable": true
+}
+192.168.1.17 | UNREACHABLE! => {
+"changed": false,
+"msg": "Failed to connect to the host via ssh: ssh: connect to host 192.168.1.17 port 22: No route to host",
+"unreachable": true
+}
+aadmin@ansible_master:~/ansible$ ansible all  -m ping
+
+
+
+
+lecture 5 #####
+nsible communcation with remote nodes :-
+
+1. Ad-Hoc commands
+2. Playbook
+
+
+
+Ad-hoc command is use for simple task or single task exection to remote machine.
+
+Playbook can run multiple task at same time
+
+$ ansible docker -m shell -a  "uptime"
+
+$ ansible docker -m shell -a  "ifconfig"
+$ ansible docker -m shell -a  "free -g"
+$ ansible-doc -l
+
+
+
+aadmin@ansible_master:~/ansible$ ansible-doc -l | grep shell
+shell                                                         Execute shell commands on targets
+
+
+aadmin@ansible_master:~/ansible$ ansible-doc -l | grep ping
+
+ping                                                          Try to connect to host, verify a usable python and return `pong' on success
+
+
+
+
+
+$ ansible -m ping docker --user=alnafi --ask-pass
+
+
+$ ansible -m ping docker --user=alnafi -k
+
+$ ansible docker -m shell -a "cat /proc/meminfo | head -n 10 "
+
+aadmin@ansible_master:~/ansible$ ansible docker -m shell -a "cat /etc/passwd | grep -i alnafi"
+
+warnings can be disabled by setting deprecation_warnings=False in ansible.cfg.
+192.168.1.14 | CHANGED | rc=0 >>
+alnafi:x:1006:1008::/home/alnafi:/bin/bash
+
+
+ansible docker -m file -a "path=/home/aadmin/test_ansible state=directory mode=0777"
+
+
+
+
+lecture  6##################################################################################################################
+nsible communcation with remote nodes :-
+
+1. Ad-Hoc commands
+2. Playbook
+
+
+
+Ad-hoc command is use for simple task or single task exection to remote machine.
+
+Playbook can run multiple task at same time
+
+$ ansible docker -m shell -a  "uptime"
+
+$ ansible docker -m shell -a  "ifconfig"
+$ ansible docker -m shell -a  "free -g"
+$ ansible-doc -l
+
+
+
+aadmin@ansible_master:~/ansible$ ansible-doc -l | grep shell
+shell                                                         Execute shell commands on targets
+
+
+aadmin@ansible_master:~/ansible$ ansible-doc -l | grep ping
+
+ping                                                          Try to connect to host, verify a usable python and return `pong' on success
+
+
+
+
+
+$ ansible -m ping docker --user=alnafi --ask-pass
+
+
+$ ansible -m ping docker --user=alnafi -k
+
+$ ansible docker -m shell -a "cat /proc/meminfo | head -n 10 "
+
+aadmin@ansible_master:~/ansible$ ansible docker -m shell -a "cat /etc/passwd | grep -i alnafi"
+
+warnings can be disabled by setting deprecation_warnings=False in ansible.cfg.
+192.168.1.14 | CHANGED | rc=0 >>
+alnafi:x:1006:1008::/home/alnafi:/bin/bash
+
+
+ansible docker -m file -a "path=/home/aadmin/test_ansible state=directory mode=0777"
+
+lecture 7 ###############################################################################################################
+$ ansible all -m shell -a "cat /etc/*-release"
+it will support everythings includeing patterns
+
+
+$ ansible all -m command -a "cat /etc/*-release"
+pattern will not allow in command module
+
+$ ansible all -m shell -a "uptime"
+
+$ ansible all -m command -a "uptime"
+
+$ ansible all -m shell -a "ls  /home/aadmin > abd.txt"
+
+
+$ ansible all -m command -a "ls  /home/aadmin > abd.txt"
+
+
+
+#file module in ansible :-
+$ ansible all -m file -a "path=/home/aadmin/TestAnsible state=directory"
+
+$ ansible all -m file -a "path=/home/aadmin/TestAnsible/abd.txt state=touch"
+$ ansible all -m shell -a "ls -ltrh /home/aadmin/TestAnsible"
+
+
+$ ansible all -m file -a "path=/home/aadmin/TestAnsible/abd.txt state=absent"
+
+
+$ ansible all -m file -a "path=/home/aadmin/TestAnsible/ABD state=absent"
+
+
+$ ansible all -m file -a "path=/home/aadmin/TestAnsible/abd.txt state=touch mode='0777'"
+
+
+
+
+$ ansible all -m file -a "path=/etc/abd.txt state=touch mode='0777'"
+
+
+$ ansible all -m file -a "path=/etc/abd2.txt state=touch" -b -K
+
+
+
+
+
+$ ansible was -m shell -a "yum install zip " -b
+
+
+$ ansible was -m yum -a "name=zip state=present" -b#Intalling zip
+
+$ ansible was -m yum -a "name=zip state=absent" -b#removing
+$ ansible was -m yum -a "name=zip state=latest" -b#updating'
+
+$ ansible was -m apt -a "name=zip state=latest" -b
+lecture 8 ######################################################################
+sudo visudo
+
+%sudo   ALL=(ALL) NOPASSWD:ALL
+
+$ ansible ubuntu -m apt -a "name=apache2 state=present" -b
+
+$ ansible ubuntu -m shell -a "apt-get remove  zip -y" -b
+
+
+
+#Transfering file using AD hoc command :-
+Copy --> Local
+scp or rysnc ---> remote copy
+
+
+copy module use in ansible
+
+$ ansible rhel  -m copy -a "src=mymasterfile.txt  dest=/home/aadmin"
+
+OR
+ansible rhel  -m copy -a "src=/home/aadmin/ansible/mymasterfile.txt  dest=/home/aadmin"
+
+
+$ ansible ubuntu -m copy -a "content='Hello this side is abdeali dodiya ' dest=/home/aadmin/abdeali.txt"
+$ ansible ubuntu -m copy -a "content='Hello this side is abdeali dodiya 1234567890  ' dest=/home/aadmin/abdeali.txt backup=yes"
+
+
+
+
+
+
+
+
+
+
+aadmin@ansible_master:~/ansible$ ls -ltrh
+total 36K
+drwxr-xr-x 2 aadmin aadmin 4.0K Jan 14 07:58 roles
+-rw-r--r-- 1 aadmin aadmin  20K Jan 14 08:18 ansible.cfg
+-rw-r--r-- 1 aadmin aadmin 1.1K Jan 15 10:41 hosts
+-rw-rw-r-- 1 aadmin aadmin   43 Jan 15 10:50 mymasterfile.txt
+drwxrwxr-x 3 aadmin aadmin 4.0K Jan 15 11:02 192.168.1.21
+aadmin@ansible_master:~/ansible$ ansible rhel -m fetch -a "src=/home/aadmin/abd1.txt dest=/home/aadmin/ansible"
+192.168.1.13 | CHANGED => {
+"changed": true,
+"checksum": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+"dest": "/home/aadmin/ansible/192.168.1.13/home/aadmin/abd1.txt",
+"md5sum": "d41d8cd98f00b204e9800998ecf8427e",
+"remote_checksum": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+"remote_md5sum": null
+}
+aadmin@ansible_master:~/ansible$ ls -ltrh
+total 40K
+drwxr-xr-x 2 aadmin aadmin 4.0K Jan 14 07:58 roles
+-rw-r--r-- 1 aadmin aadmin  20K Jan 14 08:18 ansible.cfg
+-rw-r--r-- 1 aadmin aadmin 1.1K Jan 15 10:41 hosts
+-rw-rw-r-- 1 aadmin aadmin   43 Jan 15 10:50 mymasterfile.txt
+drwxrwxr-x 3 aadmin aadmin 4.0K Jan 15 11:02 192.168.1.21
+drwxrwxr-x 3 aadmin aadmin 4.0K Jan 15 11:06 192.168.1.13
+
+
+
+
+aadmin@ansible_master:~/ansible$ tree
+.
+├── 192.168.1.13
+│   └── home
+│       └── aadmin
+│           └── abd1.txt
+├── 192.168.1.21
+│   └── home
+│       └── aadmin
+│           └── abdeali.txt
+├── ansible.cfg
+├── hosts
+├── mymasterfile.txt
+└── roles
+
+7 directories, 5 files
+
+
+
+
+
+
+
+
+aadmin@ansible_master:~/ansible$ ansible ubuntu -m fetch -a "src=/home/aadmin/abdeali.txt dest=/home/aadmin/ansible flat=yes"
+192.168.1.21 | FAILED! => {
+"changed": false,
+"msg": "dest is an existing directory, use a trailing slash if you want to fetch src into that directory"
+}
+aadmin@ansible_master:~/ansible$ ansible ubuntu -m fetch -a "src=/home/aadmin/abdeali.txt dest=/home/aadmin/ansible flat=yes"
+aadmin@ansible_master:~/ansible$ cd ..
+aadmin@ansible_master:~$ ansible ubuntu -m fetch -a "src=/home/aadmin/abdeali.txt dest=/home/aadmin flat=yes"
+[WARNING]: Could not match supplied host pattern, ignoring: ubuntu
+[WARNING]: No hosts matched, nothing to do
+aadmin@ansible_master:~$ ls -ltrh
+total 8.0K
+-rw-rw-r-- 1 aadmin aadmin    0 Jan 14 08:01 ansible.cfg
+-rw-r--r-- 1 aadmin aadmin 1.1K Jan 14 08:14 inv
+drwxrwxr-x 3 aadmin aadmin 4.0K Jan 15 11:07 ansible
+aadmin@ansible_master:~$ ansible -i ansible/hosts ubuntu -m fetch -a "src=/home/aadmin/abdeali.txt dest=/home/aadmin/ flat=yes"
+192.168.1.21 | CHANGED => {
+"changed": true,
+"checksum": "9646ba13a4e8eabeca4f5259bfd7da41d368a1a6",
+"dest": "/home/aadmin/abdeali.txt",
+"md5sum": "d1a7fb5eab1c16cb4f7cf341cf188c3d",
+"remote_checksum": "9646ba13a4e8eabeca4f5259bfd7da41d368a1a6",
+"remote_md5sum": null
+}
+aadmin@ansible_master:~$ ls -ltrh
+total 12K
+-rw-rw-r-- 1 aadmin aadmin    0 Jan 14 08:01 ansible.cfg
+-rw-r--r-- 1 aadmin aadmin 1.1K Jan 14 08:14 inv
+drwxrwxr-x 3 aadmin aadmin 4.0K Jan 15 11:07 ansible
+-rw-rw-r-- 1 aadmin aadmin    6 Jan 15 11:11 abdeali.txt
+aadmin@ansible_master:~$ cat abdeali.txt
+Hello aadmin@ansible_mastansible -i ansible/hosts rhel -m fetch -a "src=/home/aadmin/abd1.txt dest=/home/aadmin/ flat=yes"
+192.168.1.13 | CHANGED => {
+"changed": true,
+"checksum": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+"dest": "/home/aadmin/abd1.txt",
+"md5sum": "d41d8cd98f00b204e9800998ecf8427e",
+"remote_checksum": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+"remote_md5sum": null
+}
+aadmin@ansible_master:~$ ls -ltrh
+total 12K
+-rw-rw-r-- 1 aadmin aadmin    0 Jan 14 08:01 ansible.cfg
+-rw-r--r-- 1 aadmin aadmin 1.1K Jan 14 08:14 inv
+drwxrwxr-x 3 aadmin aadmin 4.0K Jan 15 11:07 ansible
+-rw-rw-r-- 1 aadmin aadmin    6 Jan 15 11:11 abdeali.txt
+-rw-r--r-- 1 aadmin aadmin    0 Jan 15 11:12 abd1.txt
+aadmin@ansible_master:~$ tree
+.
+├── abd1.txt
+├── abdeali.txt
+├── ansible
+│   ├── ansible.cfg
+│   ├── hosts
+│   ├── mymasterfile.txt
+│   └── roles
+├── ansible.cfg
+└── inv
+
+
+
+
+
+aadmin@ansible_master:~/ansible$ ansible ubuntu -m fetch -a "src=/home/aadmin/abdeali.txt dest=/home/aadmin/ansible/{{inventory_hostname}}_demo.txt flat=yes"
+192.168.1.21 | CHANGED => {
+"changed": true,
+"checksum": "9646ba13a4e8eabeca4f5259bfd7da41d368a1a6",
+"dest": "/home/aadmin/ansible/192.168.1.21_demo.txt",
+"md5sum": "d1a7fb5eab1c16cb4f7cf341cf188c3d",
+"remote_checksum": "9646ba13a4e8eabeca4f5259bfd7da41d368a1a6",
+"remote_md5sum": null
+}
+aadmin@ansible_master:~/ansible$ ls -lktr
+total 36
+drwxr-xr-x 2 aadmin aadmin  4096 Jan 14 07:58 roles
+-rw-r--r-- 1 aadmin aadmin 20027 Jan 14 08:18 ansible.cfg
+-rw-r--r-- 1 aadmin aadmin  1058 Jan 15 10:41 hosts
+-rw-rw-r-- 1 aadmin aadmin    43 Jan 15 10:50 mymasterfile.txt
+-rw-r--r-- 1 aadmin aadmin     0 Jan 15 11:15 192.168.1.13_demo.txt
+-rw-rw-r-- 1 aadmin aadmin     6 Jan 15 11:15 192.168.1.21_demo.txt
+aadmin@ansible_master:~/ansible$
+aadmin@ansible_master:~/ansible$ ansible ubuntu -m fetch -a "src=/home/aadmin/abdeali.txt dest=/home/aadmin/ansible/demo.txt flat=yes"
+192.168.1.21 | CHANGED => {
+"changed": true,
+"checksum": "9646ba13a4e8eabeca4f5259bfd7da41d368a1a6",
+"dest": "/home/aadmin/ansible/demo.txt",
+"md5sum": "d1a7fb5eab1c16cb4f7cf341cf188c3d",
+"remote_checksum": "9646ba13a4e8eabeca4f5259bfd7da41d368a1a6",
+"remote_md5sum": null
+}
+aadmin@ansible_master:~/ansible$ ls -ltrh
+total 40K
+drwxr-xr-x 2 aadmin aadmin 4.0K Jan 14 07:58 roles
+-rw-r--r-- 1 aadmin aadmin  20K Jan 14 08:18 ansible.cfg
+-rw-r--r-- 1 aadmin aadmin 1.1K Jan 15 10:41 hosts
+-rw-rw-r-- 1 aadmin aadmin   43 Jan 15 10:50 mymasterfile.txt
+-rw-r--r-- 1 aadmin aadmin    0 Jan 15 11:15 192.168.1.13_demo.txt
+-rw-rw-r-- 1 aadmin aadmin    6 Jan 15 11:15 192.168.1.21_demo.txt
+-rw-rw-r-- 1 aadmin aadmin    6 Jan 15 11:16 demo.txt
+
+
+
+
+ERROR :-
+$ ansible ubuntu -m fetch -a "src=/home/aadmin/abdeali.txt dest=/home/aadmin/ansible flat=yes"
+
+
+Solved :-
+$ ansible ubuntu -m fetch -a "src=/home/aadmin/abdeali.txt dest=/home/aadmin/ansible/ flat=yes"
+
+
+lecture 9 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ansible facts@@@@@@@
+
+$ ansible rhel -m setup
+
+
+$ ansible rhel -m setup -a "filter='ansible_python_version'"
+
+
+$ ansible rhel -m setup | grep -i ansible_python_version
+$ ansible localhost -m setup -a "filter='ansible_python_version'"
+localhost | SUCCESS => {
+"ansible_facts": {
+"ansible_python_version": "2.7.17"
+},
+"changed": false
+}
+
+
+
+
+Custom facts :-
+
+We can retrive the information from master to node machine
+
+
+You  need naviagate the loction :-
+/etc/ansible
+
+mkdir facts.d
+
+#vim apache2_status.fact
+
+
+$ cat apache2_status.fact
+#!/bin/bash
+
+status=$(systemctl is-active apache2)
+
+if [[ $status == "active" ]];then
+state="Apache2 is Running"
+else
+state="Apache2 is not running"
+fi
+echo "{\"apache_status:\":\"$state\"}"
+aadmin@ansible_master:/etc/ansible/facts.d$ sudo ./apache2_status.fact
+{"apache_status:":"Apache2 is Running"}
+
+
+
+
+#TASK :-
+HTTPD
+
+
+lecture 10 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ansible facts @@@@@@@@@@@@@@@
+
+
+Facts output must be in JSON format
+
+$ ansible all -m setup
+
+
+$ ansible all -m setup  -a "filter=ansible_local"
+
+warnings can be disabled by setting deprecation_warnings=False in ansible.cfg.
+192.168.1.20 | SUCCESS => {
+"ansible_facts": {
+"ansible_local": {
+"apache2_status": {
+"apache_status:": "Apache2 is Running"
+}
+},
+"discovered_interpreter_python": "/usr/bin/python"
+},
+"changed": false
+}
+
+
+
+$ ansible rhel -m file -a "path=/etc/ansible/facts.d state=directory" -b
+
+
+$ ansible rhel -m copy -a "src=/etc/ansible/facts.d/httpd_status.fact dest=/etc/ansible/facts.d/ mode=700 owner=aadmin group=aadmin" -b
+
+
+
+$ ansible rhel -m setup -a "filter=ansible_local"
+
+@@@@@@@@@@@@@@@@@@@@@@ lecture 11 @@@@@@@@@@@@@@@@@@
+Ansible variable :-
+
+1. Default variable --> Done
+
+2. Inventory variable (hots var , group ) --> pending
+
+3. Facts and local facts  --> Done
+
+4. Register variable --> pending
+
+
+
+$ ansible rhel -m debug
+192.168.1.13 | SUCCESS => {
+"msg": "Hello world!"
+
+
+$ ansible ubuntu  -m debug -a "msg='Abdeali Dodiya'"
+192.168.1.21 | SUCCESS => {
+"msg": "Abdeali Dodiya"
+}
+
+
+https://docs.ansible.com/ansible/latest/reference_appendices/special_variables.html
+$ ansible rhel -m debug -a "msg=inventory_hostname"
+
+$ ansible rhel -m debug -a "msg={{hostvars}}"
+$ ansible rhel -m debug -a "msg={{inventory_hostname}}"
+
+
+
+
+@@@@@@@@@ lecture 12 @@@@@@@@@@@@@@@@@@@@@@@@@@@@
+#it will be work with python env
+$ ansible rhel -m shell -a "ifconfi
+
+
+#it will be work without python env
+$ ansible rhel -m raw -a "ifconfig"
+
+
+@@@@@@@@@@@@@@@@@@ 13  @@@@@@@@@@@@@@@@@ ansible play book pic s
+---
+- name: Installation apache package to remote machine
+  hosts: rhel
+  tasks:
+  - name: Installa the httpd
+    yum:
+            name: httpd
+            state: present
+
+@@@@@@@@@@@@@@@ lecture 14 @@@@@@@@@@@@
+---
+- hosts: rhel
+  tasks:
+  - name: Installation wget
+    become: yes
+    yum: name=wget state=present
+	
+---
+- hosts: rhel
+  become: yes 
+  tasks:
+  - name: Removing wget
+    yum: 
+      name: wget
+      state: absent
+	  
+	  
+	  
+---
+- name: Installation apache package to remote machine 
+  hosts: rhel
+  become: yes 
+  tasks:
+  - name: Installation httpd 
+    yum: 
+      name: httpd
+      state: absent
+	  
+	  
+---
+- hosts: rhel
+  tasks:
+  - name: Installation vim
+    become: yes
+    yum: 
+      name: vim
+      state: present
+  - name: Installation httpd
+    become: true
+    yum:
+            name: httpd
+            state: present
+
+
+--
+- hosts: rhel
+  tasks:
+  - name: Installation wget
+    shell: "sudo yum install wget -y"
+	
+	
+@@@@@@@@@@@@@@@@@@@@@@@@ lecture 15 @@@@@@@@@@@@@
+---
+- hosts: rhel
+  gather_facts: yes
+  tasks:
+  - name: Printing hostname
+    debug:
+      msg: "{{ ansible_hostname }}"
+	  
+	  
+@@@@@@@@@@@@@@@@@@@@@@@16  lecture copy and fetch @@@@@@@@@@@@
+- name: Fetch a file from remote rhel machine
+  hosts: rhel
+  tasks:
+  - fetch:
+      src: /home/aadmin/RHEL.txt
+      dest: /home/aadmin/ansible/
+	  
+2
+---
+- hosts: rhel
+  gather_facts: false
+  tasks:
+  - name: Copy the file to the Redhat system.
+    copy: src=/home/aadmin/ansible/configure.conf dest=/home/aadmin/
+	
+3
+---
+- hosts: rhel
+  gather_facts: false
+  tasks  - name: Copy the file to the Redhat system.
+    copy:
+      src: /home/aadmin/ansible/configure.conf
+      dest: /home/aadmin/
+	  
+	  
+4
+- name: Fetch a file from remote rhel machine
+  hosts: rhel
+  gather_facts: false
+  tasks:
+  - fetch:
+      src: /home/aadmin/myabd.txt
+      dest: /home/aadmin/ansible/
+      flat: yes
+
+
+5
+
+@@@@@@@@@@@@@@@@@lecture 17 @@@@@@@@@@@@@@@@@@@@
+[ubuntu]
+192.168.1.20 
+
+[rhel]
+192.168.1.13
+
+
+[all:vars]
+ansible_ssh_user=aadmin
+ansible_ssh_pass=123@abd
+
+@@@@@@@@@@@@@ lecture 18  copy and fetch register variabale
+
+
+---
+- hosts: all
+  gather_facts: no 
+  tasks:
+  - name: Copy bash scripting to remote machine 
+    copy: 
+      src: /home/aadmin/ansible/get_service_details.sh
+      dest: /home/aadmin/
+      mode: 0755
+      owner: aadmin
+      group: aadmin
+  - name: Running the bash script to remote home directory 
+    command: /home/aadmin/get_service_details.sh
+    register: command_output
+  - debug: 
+      var: command_output.stdout_lines
+	  
+	  
+script
+#!/bin/bash
+service_status=$(systemctl is-active sshd)
+if [[ "$service_status" == "active" ]]; then
+	echo "ssh is running!!!"
+else
+	echo "ssh is not running!!!"
+fi
+
+
+#ssh aadmin@192.168.1.21
+$ ssh-copy-id aadmin@192.168.1.21
+#ssh-keygen
+$ ssh-copy-id aadmin@192.168.1.21
+or 
+$ ssh-copy-id aadmin@192.168.1.21 -f
+#ssh-keygen -f "/home/aadmin/.ssh/known_hosts" -R "192.168.1.21"
+
+#ssh aadmin@192.168.1.21
+
+$ ssh-copy-id aadmin@192.168.1.21
+or 
+$ ssh-copy-id aadmin@192.168.1.21 -f
+
+ssh aadmin@192.168.1.21
+
+
+#$ ansible all -m ping
+192.168.1.21 | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+
+192.168.1.13 | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+
+
+
+$ cat get_service_details.sh
+
+
+#/bin/bash
+service_status=`systemctl is-active nginx`
+if [[ "$service_status" == "active"  ]]
+then
+        echo "sshd is running!!!"
+else
+        echo "sshd is not running!!!"
+fi
+
+
+#you need to install the nginx 
+
+systemctl status nginx 
+
+
+
+#######################
+
+
+
+aadmin@ansible_master:~/ansible$ vim GET_SERVICE_DETAILS.yml
+aadmin@ansible_master:~/ansible$ ansible-playbook GET_SERVICE_DETAILS.yml
+
+PLAY [all] *********************************************************************************************************************************************************************************************************************
+
+TASK [Copy bash scripting to remote machine] ***********************************************************************************************************************************************************************************
+changed: [192.168.1.21]
+
+changed: [192.168.1.13]
+
+PLAY RECAP *********************************************************************************************************************************************************************************************************************
+192.168.1.13               : ok=1    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+192.168.1.21               : ok=1    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+aadmin@ansible_master:~/ansible$ cat GET_SERVICE_DETAILS.yml
+---
+- hosts: all
+  gather_facts: no
+  tasks:
+  - name: Copy bash scripting to remote machine
+    copy:
+      src: /home/aadmin/ansible/get_service_details.sh
+      dest: /home/aadmin/
+      mode: 0755
+      owner: aadmin
+      group: aadmin
+
+
+aadmin@ansible_master:~/ansible$ ansible all -m shell -a "ls -ltrh /home/aadmin/"
+[DEPRECATION WARNING]: Distribution rhel 9.1 on host 192.168.1.13 should use /usr/libexec/platform-python, but is using /usr/bin/python for backward compatibility with prior Ansible releases. A future Ansible release will
+default to using the discovered platform python for this host. See https://docs.ansible.com/ansible/2.9/reference_appendices/interpreter_discovery.html for more information. This feature will be removed in version 2.12.
+Deprecation warnings can be disabled by setting deprecation_warnings=False in ansible.cfg.
+192.168.1.13 | CHANGED | rc=0 >>
+total 4.0K
+-rw-r--r--. 1 aadmin aadmin   0 Jan 22 10:59 RHEL.txt
+-rw-rw-r--. 1 aadmin aadmin   0 Jan 22 11:10 configure.conf
+-rw-r--r--. 1 aadmin aadmin   0 Jan 22 11:24 myabd.txt
+-rwxr-xr-x. 1 aadmin aadmin 164 Jan 25 09:34 get_service_details.sh
+192.168.1.21 | CHANGED | rc=0 >>
+total 4.0K
+-rwxr-xr-x 1 aadmin aadmin 164 Jan 25 14:34 get_service_details.sh
+aadmin@ansible_master:~/ansible$ ansible all -m shell -a "cat  /home/aadmin/get_service_details.sh"
+192.168.1.21 | CHANGED | rc=0 >>
+#/bin/bash
+service_status=`systemctl is-active sshd`
+if [[ "$service_status" == "active"  ]]
+then
+        echo "sshd is running!!!"
+else
+        echo "sshd is not running!!!"
+fi
+
+192.168.1.13 | CHANGED | rc=0 >>
+#/bin/bash
+service_status=`systemctl is-active sshd`
+if [[ "$service_status" == "active"  ]]
+then
+        echo "sshd is running!!!"
+else
+        echo "sshd is not running!!!"
+
+
+
+
+##############
+aadmin@ansible_master:~/ansible$ cat GET_SERVICE_DETAILS.yml
+---
+- hosts: all
+  gather_facts: no
+  tasks:
+  - name: Copy bash scripting to remote machine
+    copy:
+      src: /home/aadmin/ansible/get_service_details.sh
+      dest: /home/aadmin/
+      mode: 0755
+      owner: aadmin
+      group: aadmin
+  - name: Running the bash script to remote home directory
+    shell: /home/aadmin/get_service_details.sh
+
+
+aadmin@ansible_master:~/ansible$ ansible-playbook GET_SERVICE_DETAILS.yml
+
+PLAY [all] *********************************************************************************************************************************************************************************************************************
+
+TASK [Copy bash scripting to remote machine] ***********************************************************************************************************************************************************************************
+ok: [192.168.1.21]
+[DEPRECATION WARNING]: Distribution rhel 9.1 on host 192.168.1.13 should use /usr/libexec/platform-python, but is using /usr/bin/python for backward compatibility with prior Ansible releases. A future Ansible release will
+default to using the discovered platform python for this host. See https://docs.ansible.com/ansible/2.9/reference_appendices/interpreter_discovery.html for more information. This feature will be removed in version 2.12.
+Deprecation warnings can be disabled by setting deprecation_warnings=False in ansible.cfg.
+ok: [192.168.1.13]
+
+TASK [Running the bash script to remote home directory] ************************************************************************************************************************************************************************
+changed: [192.168.1.21]
+changed: [192.168.1.13]
+
+PLAY RECAP *********************************************************************************************************************************************************************************************************************
+192.168.1.13               : ok=2    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+192.168.1.21               : ok=2    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+
+
+
+
+
+
+####
+
+$ cat get_service_details.sh
+#!/bin/bash
+service_status=$(systemctl is-active sshd)
+if [[ "$service_status" == "active" ]]; then
+        echo "ssh is running!!!"
+else
+        echo "ssh is not running!!!"
+fi
+aadmin@ansible_master:~/ansible$ cat GET_SERVICE_DETAILS.yml
+---
+- hosts: all
+  gather_facts: no
+  tasks:
+  - name: Copy bash scripting to remote machine
+    copy:
+      src: /home/aadmin/ansible/get_service_details.sh
+      dest: /home/aadmin/
+      mode: 0755
+      owner: aadmin
+      group: aadmin
+  - name: Running the bash script to remote home directory
+    shell: "/home/aadmin/get_service_details.sh"
+    register: command_output
+  - debug:
+      var: command_output
+
+aadmin@ansible_master:~/ansible$ ansible-playbook GET_SERVICE_DETAILS.yml
+
+PLAY [all] *********************************************************************************************************************************************************************************************************************
+
+TASK [Copy bash scripting to remote machine] ***********************************************************************************************************************************************************************************
+ok: [192.168.1.21]
+[DEPRECATION WARNING]: Distribution rhel 9.1 on host 192.168.1.13 should use /usr/libexec/platform-python, but is using /usr/bin/python for backward compatibility with prior Ansible releases. A future Ansible release will
+default to using the discovered platform python for this host. See https://docs.ansible.com/ansible/2.9/reference_appendices/interpreter_discovery.html for more information. This feature will be removed in version 2.12.
+Deprecation warnings can be disabled by setting deprecation_warnings=False in ansible.cfg.
+ok: [192.168.1.13]
+
+TASK [Running the bash script to remote home directory] ************************************************************************************************************************************************************************
+changed: [192.168.1.21]
+changed: [192.168.1.13]
+
+TASK [debug] *******************************************************************************************************************************************************************************************************************
+ok: [192.168.1.13] => {
+    "command_output": {
+        "changed": true,
+        "cmd": "/home/aadmin/get_service_details.sh",
+        "delta": "0:00:00.028406",
+        "end": "2023-01-25 10:01:29.372109",
+        "failed": false,
+        "rc": 0,
+        "start": "2023-01-25 10:01:29.343703",
+        "stderr": "",
+        "stderr_lines": [],
+        "stdout": "ssh is running!!!",
+        "stdout_lines": [
+            "ssh is running!!!"
+        ]
+    }
+}
+ok: [192.168.1.21] => {
+    "command_output": {
+        "changed": true,
+        "cmd": "/home/aadmin/get_service_details.sh",
+        "delta": "0:00:00.009037",
+        "end": "2023-01-25 15:01:29.296855",
+        "failed": false,
+        "rc": 0,
+        "start": "2023-01-25 15:01:29.287818",
+        "stderr": "",
+        "stderr_lines": [],
+        "stdout": "ssh is running!!!",
+        "stdout_lines": [
+            "ssh is running!!!"
+        ]
+    }
+}
+
+PLAY RECAP *********************************************************************************************************************************************************************************************************************
+192.168.1.13               : ok=3    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+192.168.1.21               : ok=3    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+
+
+
+
+
+
+####################
+aadmin@ansible_master:~/ansible$ ansible-playbook GET_SERVICE_DETAILS.yml
+
+PLAY [all] *********************************************************************************************************************************************************************************************************************
+
+TASK [Copy bash scripting to remote machine] ***********************************************************************************************************************************************************************************
+ok: [192.168.1.21]
+[DEPRECATION WARNING]: Distribution rhel 9.1 on host 192.168.1.13 should use /usr/libexec/platform-python, but is using /usr/bin/python for backward compatibility with prior Ansible releases. A future Ansible release will
+default to using the discovered platform python for this host. See https://docs.ansible.com/ansible/2.9/reference_appendices/interpreter_discovery.html for more information. This feature will be removed in version 2.12.
+Deprecation warnings can be disabled by setting deprecation_warnings=False in ansible.cfg.
+ok: [192.168.1.13]
+
+TASK [Running the bash script to remote home directory] ************************************************************************************************************************************************************************
+changed: [192.168.1.21]
+changed: [192.168.1.13]
+
+TASK [debug] *******************************************************************************************************************************************************************************************************************
+ok: [192.168.1.13] => {
+    "command_output.stdout_lines": [
+        "ssh is running!!!"
+    ]
+}
+ok: [192.168.1.21] => {
+    "command_output.stdout_lines": [
+        "ssh is running!!!"
+    ]
+}
+
+PLAY RECAP *********************************************************************************************************************************************************************************************************************
+192.168.1.13               : ok=3    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+192.168.1.21               : ok=3    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+aadmin@ansible_master:~/ansible$ cat GET_SERVICE_DETAILS.yml
+---
+- hosts: all
+  gather_facts: no
+  tasks:
+  - name: Copy bash scripting to remote machine
+    copy:
+      src: /home/aadmin/ansible/get_service_details.sh
+      dest: /home/aadmin/
+      mode: 0755
+      owner: aadmin
+      group: aadmin
+  - name: Running the bash script to remote home directory
+    command: /home/aadmin/get_service_details.sh
+    register: command_output
+  - debug:
+      var: command_output.stdout_lines
+
+aadmin@ansible_master:~/ansible$ cat get_service_details.sh
+#!/bin/bash
+service_status=$(systemctl is-active sshd)
+if [[ "$service_status" == "active" ]]; then
+        echo "ssh is running!!!"
+else
+        echo "ssh is not running!!!"
+		
+		
+@@@@@@@@@@@@@@@@@@@@@ 19 copy and fetc python scripting  @@@@@@@@@@@@@@@
+#!/bin/bash
+service_name="nginx"
+service_status=$(systemctl is-active $service_name)
+if [[ "$service_status" == "active" ]]; then
+	echo "$service_name is running!!!"
+else
+	echo "$service_name not running!!!"
+fi
+
+
+
+#!/bin/bash
+service="nginx"
+status=`ps ax | grep -i nginx | wc -l > count.txt`
+if [ $status  -lt 1 ] 
+then
+	echo "$service service is not running"
+else
+	echo "$service service is  running"
+fi
+
+
+
+---
+- hosts: all
+  gather_facts: no 
+  tasks:
+  - name: Copy bash scripting to remote machine 
+    copy: 
+      src: /home/aadmin/ansible/get_service_details.sh
+      dest: /home/aadmin/
+      mode: 0755
+      owner: aadmin
+      group: aadmin
+  - name: Running the bash script to remote home directory 
+    command: /home/aadmin/get_service_details.sh
+    register: command_output
+  - debug: 
+      var: command_output.stdout_lines
+	  
+	  
+$ cat get_nginx_service_details.sh
+#!/bin/bash
+service_name="nginx"
+service_status=$(systemctl is-active $service_name)
+if [[ "$service_status" == "active" ]]; then
+        echo "$service_name is running!!!"
+else
+        echo "$service_name not running!!!"
+fi
+aadmin@ansible_master:~/ansible$ cat GET_NGINX_SERVICE_DETAILS.yml
+---
+- hosts: all
+  gather_facts: no
+  tasks:
+  - name: Copy bash scripting to remote machine
+    copy:
+      src: /home/aadmin/ansible/get_nginx_service_details.sh
+      dest: /home/aadmin/
+      mode: 0755
+      owner: aadmin
+      group: aadmin
+  - name: Running the bash script to remote home directory
+    shell: /home/aadmin/get_nginx_service_details.sh
+    register: command_output
+  - debug:
+      var: command_output.stdout_lines
+
+aadmin@ansible_master:~/ansible$ ansible-playbook GET_NGINX_SERVICE_DETAILS.yml
+
+PLAY [all] ***************************************************************************************************************************************************************************
+
+TASK [Copy bash scripting to remote machine] *****************************************************************************************************************************************
+ok: [192.168.1.21]
+[DEPRECATION WARNING]: Distribution rhel 9.1 on host 192.168.1.13 should use /usr/libexec/platform-python, but is using /usr/bin/python for backward compatibility with prior Ansible
+ releases. A future Ansible release will default to using the discovered platform python for this host. See
+https://docs.ansible.com/ansible/2.9/reference_appendices/interpreter_discovery.html for more information. This feature will be removed in version 2.12. Deprecation warnings can be
+disabled by setting deprecation_warnings=False in ansible.cfg.
+ok: [192.168.1.13]
+
+TASK [Running the bash script to remote home directory] ******************************************************************************************************************************
+changed: [192.168.1.21]
+changed: [192.168.1.13]
+
+TASK [debug] *************************************************************************************************************************************************************************
+ok: [192.168.1.13] => {
+    "command_output.stdout_lines": [
+        "nginx not running!!!"
+    ]
+}
+ok: [192.168.1.21] => {
+    "command_output.stdout_lines": [
+        "nginx is running!!!"
+    ]
+}
+
+PLAY RECAP ***************************************************************************************************************************************************************************
+192.168.1.13               : ok=3    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+192.168.1.21               : ok=3    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+
+
+---
+- hosts: all
+  gather_facts: no 
+  tasks:
+  - name: Copy bash scripting to remote machine 
+    copy: 
+      src: /home/aadmin/ansible/get_nginx_service_details.sh
+      dest: /home/aadmin/
+      mode: 0755
+      owner: aadmin
+      group: aadmin
+  - name: Running the bash script to remote home directory 
+    shell: /home/aadmin/get_nginx_service_details.sh
+    register: command_output
+  - debug: 
+      var: command_output.stdout_lines
+
+
+
+
+---
+- hosts: all
+  gather_facts: no 
+  tasks:
+  - name: Copy bash scripting to remote machine 
+    copy: 
+      src: /home/aadmin/ansible/get_nginx_service_details_v2.py
+      dest: /home/aadmin/
+      mode: 0755
+      owner: aadmin
+      group: aadmin
+  - name: Running the bash script to remote home directory 
+    command: /home/aadmin/get_nginx_service_details_v2.py
+    register: command_output
+  - debug: 
+      var: command_output
+
+
+
+
+#!/usr/bin/env python3
+import subprocess
+service="nginx"
+output=subprocess.check_output(["ps","ax"])
+output=output.decode()
+status=output.count("nginx")
+print(status)
+if (status > 1):
+    print("Service is running")
+else:
+    print("Service is not running")

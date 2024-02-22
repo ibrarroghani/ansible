@@ -1,0 +1,165 @@
+json file :
+{
+        "header_para": ["Hostname","Ip Address", "Df -h (Mount storage)"],
+	"hostname": "hostname | tr -d '\n'",
+	"ip_address": "hostname -I | awk '{print $1}' | tr -d '\n'",
+	"os_flavour": "cat /etc/*-release | grep -iw 'ID' | awk -F = '{print $2}' | tr -d '\n' | tr -d '\"'",
+	"df_details": "df -h | grep -v 'tmpfs'"
+
+}
+
+
+json file 
+{
+        "header_para": ["Hostname","Ip Address", "Df -h (Mount storage)"],
+	"hostname": "hostname | tr -d '\n'",
+	"ip_address": "hostname -I | awk '{print $1}' | tr -d '\n'",
+	"os_flavour": "cat /etc/*-release | grep -iw 'ID' | awk -F = '{print $2}' | tr -d '\n' | tr -d '\"'",
+	"df_details": "df -h | grep -v 'tmpfs'"
+
+}
+
+
+python file #!/usr/bin/python
+import os 
+import csv 
+import json
+from datetime import *
+
+
+date=date.today()
+time1=datetime.now()
+
+filepath=time1.strftime("DAILY_REPORTS_%Y-%m-%d%H%M.csv")
+jsonfile="my_linux_cmd.json"
+with open(jsonfile) as jf:
+    my_dict=json.load(jf)
+os_name=os.popen(my_dict['os_flavour']).read().strip('\n')
+print(os_name)
+if os_name == 'ubuntu' or os_name=='rhel':
+    print("ubuntu/RHEL Os found and we are collecting information , Please wait!!!!")
+
+    #hostname details 
+    hostname=os.popen(my_dict["hostname"]).read()
+    print(hostname)
+
+    #Ip details 
+    ip=os.popen(my_dict["ip_address"]).read()
+    print(ip)
+
+    #File storage details 
+    df_details=os.popen(my_dict["df_details"]).read()
+    print(df_details)
+
+
+    #Storin variable into list for inserting CSV data 
+    header_csv=(my_dict['header_para'])
+    header_csv=[str(x) for x in header_csv]
+    print(header_csv)
+
+    #Data csv
+    data_csv=  [hostname,ip,df_details]
+
+    file1=open(filepath,'a+')
+    writer=csv.writer(file1)
+    writer.writerow(header_csv)
+    writer.writerow(data_csv)
+    file1.close()
+    
+    print("FIle import successfully from your current directory"+filepath)
+else:
+    print("Otheer os found ")
+	
+	
+ansible
+---
+- hosts: all
+  gather_facts: yes  
+  tasks:
+  - name: Removing OLD python file
+    file:
+      path: /home/aadmin/GET_OS_DETAILS.py
+      state: absent
+  - name: Removing JSON file from the remote machine
+    file:
+      path: /home/aadmin/my_linux_cmd.json
+      state: absent
+  - name: Removing OLD CSV file fro mthe remote machine
+    file:
+      path: /home/aadmin/DAILY_REPORTS.csv
+      state: absent
+  - name: Copy the /home/aadmin/ansible/GET_OS_DETAILS.py file to remote home directory
+    copy:
+      src: /home/aadmin/ansible/GET_OS_DETAILS.py
+      dest: /home/aadmin
+      mode: 0755
+      owner: aadmin
+      group: aadmin
+  - name: copy to json file /home/aadmin/ansible/my_linux_cmd.json to remote home directory
+    copy:
+      src: /home/aadmin/ansible/my_linux_cmd.json
+      dest: /home/aadmin
+      owner: aadmin
+      group: aadmin
+  - name: Executing the python script from remote endpoints 
+    command: /home/aadmin/GET_OS_DETAILS.py
+  - name: Fetching the /home/aadmin/DAILY_REPORTS.csv to the Ansible master machine 
+    fetch:
+      src: /home/aadmin/DAILY_REPORTS.csv
+      dest: /home/aadmin/ansible/CSV/DAILY_REPORTS{{inventory_hostname}}_{{ansible_date_time.minute}}.csv
+      flat: yes
+ 
+ 
+ python :
+ #!/usr/bin/python3
+import os 
+import csv 
+import json
+from datetime import *
+
+
+date=date.today()
+time1=datetime.now()
+
+#filepath=time1.strftime("DAILY_REPORTS_%Y-%m-%d%H%M.csv")
+filepath=("DAILY_REPORTS.csv")
+jsonfile="my_linux_cmd.json"
+with open(jsonfile) as jf:
+    my_dict=json.load(jf)
+os_name=os.popen(my_dict['os_flavour']).read().strip('\n')
+print(os_name)
+if os_name == 'ubuntu' or os_name=='rhel':
+    print("ubuntu/RHEL Os found and we are collecting information , Please wait!!!!")
+
+    #hostname details 
+    hostname=os.popen(my_dict["hostname"]).read()
+    print(hostname)
+
+    #Ip details 
+    ip=os.popen(my_dict["ip_address"]).read()
+    print(ip)
+
+    #File storage details 
+    df_details=os.popen(my_dict["df_details"]).read()
+    print(df_details)
+
+
+    #Storin variable into list for inserting CSV data 
+    header_csv=(my_dict['header_para'])
+    header_csv=[str(x) for x in header_csv]
+    print(header_csv)
+
+    #Data csv
+    data_csv=  [hostname,ip,df_details]
+
+    file1=open(filepath,'a+')
+    writer=csv.writer(file1)
+    writer.writerow(header_csv)
+    writer.writerow(data_csv)
+    file1.close()
+    
+    print("FIle import successfully from your current directory"+filepath)
+else:
+    print("Otheer os found ")
+	
+$ ansible localhost -m setup -a "filter='ansible_date_time'"
